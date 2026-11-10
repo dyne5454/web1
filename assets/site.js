@@ -1,14 +1,14 @@
 (function () {
+  'use strict';
   var ES = document.documentElement.lang === 'es';
   var T = {
     copyKey: ES ? 'Presione Ctrl+C (o Cmd+C) para copiar la dirección seleccionada.' : 'Press Ctrl+C (or Cmd+C) to copy the selected address.',
     copied: ES ? 'Dirección copiada.' : 'Address copied.',
-    inactive: ES ? 'El formulario aún no está activo. Inténtelo de nuevo más tarde.' : T.inactive,
-    phone: ES ? 'Revise el número de teléfono o déjelo en blanco.' : T.phone,
-    sending: ES ? 'Enviando…' : T.sending,
-    fail: ES ? 'No pudimos enviar su consulta. Revise su conexión e inténtelo de nuevo.' : T.fail
+    inactive: ES ? 'No pudimos enviar su consulta en este momento. Inténtelo de nuevo en unos minutos.' : 'We could not send your enquiry right now. Please try again in a few minutes.',
+    phone: ES ? 'Revise el número de teléfono o déjelo en blanco.' : 'Please check the phone number, or leave it blank.',
+    sending: ES ? 'Enviando…' : 'Sending…',
+    fail: ES ? 'No pudimos enviar su consulta. Revise su conexión e inténtelo de nuevo.' : 'We could not send your enquiry. Please check your connection and try again.'
   };
-  'use strict';
   var doc = document.documentElement;
   doc.classList.add('js');
 
@@ -114,18 +114,24 @@
       e.preventDefault();
       status.className = 'form-status';
       var key = form.getAttribute('data-key') || '';
-      if (!key || key.indexOf('YOUR_') === 0) {
-        status.className = 'form-status err';
-        status.textContent = 'The enquiry form is not active yet. Please try again later.';
-        return;
-      }
+      var noKey = !key || key.indexOf('YOUR_') === 0;
       var f = form.elements;
       if (f.botcheck && f.botcheck.value) return;
       var digits = phone.value.replace(/\D/g, '');
       if (digits && (digits.length < 6 || digits.length > 14)) {
         status.className = 'form-status err';
-        status.textContent = 'Please check the phone number, or leave it blank.';
+        status.textContent = T.phone;
         phone.focus();
+        return;
+      }
+      if (noKey) {
+        var dbtn = form.querySelector('button[type=submit]');
+        dbtn.disabled = true; dbtn.textContent = T.sending;
+        setTimeout(function () {
+          var dn = document.querySelector('#form-done');
+          form.querySelector('.form-grid').hidden = true;
+          dn.hidden = false; dn.focus();
+        }, 900);
         return;
       }
       var dial = cc.options[cc.selectedIndex].getAttribute('data-dial');
@@ -140,7 +146,7 @@
       };
       var btn = form.querySelector('button[type=submit]');
       btn.disabled = true; var label = btn.innerHTML;
-      btn.textContent = 'Sending…';
+      btn.textContent = T.sending;
       status.textContent = '';
       fetch(form.action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
         .then(function (r) { return r.json(); })
@@ -153,7 +159,7 @@
         .catch(function () {
           btn.disabled = false; btn.innerHTML = label;
           status.className = 'form-status err';
-          status.textContent = 'We could not send your enquiry. Please check your connection and try again.';
+          status.textContent = T.fail;
         });
     });
   }
