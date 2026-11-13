@@ -314,3 +314,27 @@ details.faq .answer p:last-child{margin-bottom:0}
 .lang-li{display:flex;align-items:center}
 .lang-switch{font-size:.88rem;font-weight:650;padding:.38rem .8rem;border:1.5px solid var(--green-700);border-radius:999px;color:var(--green-900);text-decoration:none;white-space:nowrap;transition:background .2s,color .2s}
 .lang-switch:hover{background:var(--green-900);color:#fff}
+
+/* Language menu */
+.lang-menu{position:relative}
+.lang-menu summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:.88rem;font-weight:650;padding:.38rem .8rem;border:1.5px solid var(--green-700);border-radius:999px;color:var(--green-900);white-space:nowrap}
+.lang-menu summary::-webkit-details-marker{display:none}
+.lang-menu summary::after{content:"";width:.42rem;height:.42rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.lang-menu[open] summary,.lang-menu summary:hover{background:var(--green-900);color:#fff}
+.lang-menu ul{position:absolute;right:0;top:calc(100% + .4rem);z-index:60;min-width:11rem;margin:0;padding:.35rem;list-style:none;background:#fff;border:1px solid #d3dcd4;border-radius:12px;box-shadow:0 12px 30px rgba(10,40,25,.18)}
+.lang-menu li{display:block;margin:0;padding:0}
+.lang-menu li a{display:block;padding:.55rem .8rem;border-radius:8px;color:var(--green-900);font-weight:550;text-decoration:none;white-space:nowrap}
+.lang-menu li a:hover,.lang-menu li a[aria-current=true]{background:var(--cream,#f3f1e8);font-weight:700}
+@media(max-width:860px){
+  .lang-menu{width:100%}
+  .lang-menu summary{display:none}
+  .lang-menu ul{position:static;display:flex;flex-wrap:wrap;gap:.4rem;min-width:0;padding:.6rem 0 0;border:0;box-shadow:none;background:transparent}
+  .lang-menu li a{border:1.5px solid var(--green-700);border-radius:999px;padding:.4rem .85rem;font-size:.9rem}
+  .lang-menu li a[aria-current=true]{background:var(--green-900);color:#fff}
+}
+/* Long words in German, French and Portuguese */
+h1,h2,h3,h4,p,li,a,summary,td,th,.card,.field label{overflow-wrap:break-word;hyphens:auto}
+
+address{font-style:normal;line-height:1.65}
+.footer-address{margin-top:1rem;font-size:.95rem;opacity:.9}
+.footer-address strong{font-weight:650}

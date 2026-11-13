@@ -1,14 +1,34 @@
 (function () {
   'use strict';
-  var ES = document.documentElement.lang === 'es';
-  var T = {
-    copyKey: ES ? 'Presione Ctrl+C (o Cmd+C) para copiar la dirección seleccionada.' : 'Press Ctrl+C (or Cmd+C) to copy the selected address.',
-    copied: ES ? 'Dirección copiada.' : 'Address copied.',
-    inactive: ES ? 'No pudimos enviar su consulta en este momento. Inténtelo de nuevo en unos minutos.' : 'We could not send your enquiry right now. Please try again in a few minutes.',
-    phone: ES ? 'Revise el número de teléfono o déjelo en blanco.' : 'Please check the phone number, or leave it blank.',
-    sending: ES ? 'Enviando…' : 'Sending…',
-    fail: ES ? 'No pudimos enviar su consulta. Revise su conexión e inténtelo de nuevo.' : 'We could not send your enquiry. Please check your connection and try again.'
+  /* Every normal page change starts at the top (back/forward and #links keep their position) */
+  try {
+    var navEntry = window.performance && performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (!location.hash && (!navEntry || navEntry.type === 'navigate')) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.addEventListener('pageshow', function (e) {
+      if (!e.persisted && !location.hash && (!navEntry || navEntry.type === 'navigate')) window.scrollTo(0, 0);
+    });
+  } catch (err) { window.scrollTo(0, 0); }
+
+  var L = (document.documentElement.lang || 'en').slice(0, 2);
+  var I = {
+    en: { copyKey: 'Press Ctrl+C (or Cmd+C) to copy the selected address.', copied: 'Address copied.', phone: 'Please check the phone number, or leave it blank.', sending: 'Sending…', fail: 'We could not send your enquiry. Please check your connection and try again.' },
+    es: { copyKey: 'Presione Ctrl+C (o Cmd+C) para copiar la dirección seleccionada.', copied: 'Dirección copiada.', phone: 'Revise el número de teléfono o déjelo en blanco.', sending: 'Enviando…', fail: 'No pudimos enviar su consulta. Revise su conexión e inténtelo de nuevo.' },
+    de: { copyKey: 'Drücken Sie Strg+C (oder Cmd+C), um die markierte Adresse zu kopieren.', copied: 'Adresse kopiert.', phone: 'Bitte prüfen Sie die Telefonnummer oder lassen Sie das Feld leer.', sending: 'Wird gesendet…', fail: 'Ihre Anfrage konnte nicht gesendet werden. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.' },
+    fr: { copyKey: 'Appuyez sur Ctrl+C (ou Cmd+C) pour copier l’adresse sélectionnée.', copied: 'Adresse copiée.', phone: 'Veuillez vérifier le numéro de téléphone ou laissez le champ vide.', sending: 'Envoi en cours…', fail: 'Nous n’avons pas pu envoyer votre demande. Vérifiez votre connexion et réessayez.' },
+    pt: { copyKey: 'Pressione Ctrl+C (ou Cmd+C) para copiar o endereço selecionado.', copied: 'Endereço copiado.', phone: 'Verifique o número de telefone ou deixe o campo em branco.', sending: 'Enviando…', fail: 'Não foi possível enviar sua solicitação. Verifique sua conexão e tente novamente.' }
   };
+  var T = I[L] || I.en;
+  var lm = document.querySelector('.lang-menu');
+  if (lm) {
+    var mq = window.matchMedia('(max-width: 860px)');
+    var syncLang = function () { if (mq.matches) lm.setAttribute('open', ''); else lm.removeAttribute('open'); };
+    syncLang();
+    if (mq.addEventListener) mq.addEventListener('change', syncLang); else if (mq.addListener) mq.addListener(syncLang);
+    document.addEventListener('click', function (e) { if (!mq.matches && !lm.contains(e.target)) lm.removeAttribute('open'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !mq.matches) lm.removeAttribute('open'); });
+  }
   var doc = document.documentElement;
   doc.classList.add('js');
 
@@ -107,7 +127,11 @@
       var o = cc.options[cc.selectedIndex];
       view.textContent = cc.value + ' ' + o.getAttribute('data-dial');
     }
-    if (cc && view) { cc.addEventListener('change', syncCC); syncCC(); }
+    if (cc && view) {
+      ['change', 'input', 'keyup', 'blur'].forEach(function (ev) { cc.addEventListener(ev, syncCC); });
+      window.addEventListener('pageshow', syncCC);
+      syncCC();
+    }
     if (phone) phone.addEventListener('input', function () { phone.value = phone.value.replace(/[^0-9 ()\-.]/g, ''); });
 
     form.addEventListener('submit', function (e) {
@@ -137,7 +161,7 @@
       var dial = cc.options[cc.selectedIndex].getAttribute('data-dial');
       var data = {
         access_key: key,
-        subject: 'CBDYNE website enquiry' + (ES ? ' [ES]' : '') + ': ' + f.topic.value,
+        subject: 'CBDYNE website enquiry' + (L !== 'en' ? ' [' + L.toUpperCase() + ']' : '') + ': ' + f.topic.value,
         from_name: 'CBDYNE website',
         name: f.name.value, email: f.email.value,
         organization: f.organization.value, topic: f.topic.value,
